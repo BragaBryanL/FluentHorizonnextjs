@@ -636,7 +636,7 @@ export default function Dashboard() {
                         <div className="mt-4">
                           <div className="flex items-center justify-between text-xs mb-1.5">
                             <span className="text-blue-200">Progress</span>
-                            <span className-white">{courseProgress="font-medium text.progress}%</span>
+                            <span className="font-medium text-white">{courseProgress.progress}%</span>
                           </div>
                           <div className="h-2 bg-white/10 rounded-full overflow-hidden">
                             <div 
