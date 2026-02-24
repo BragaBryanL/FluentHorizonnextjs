@@ -274,7 +274,7 @@ export default function Dashboard() {
   const [leaderboardFilter, setLeaderboardFilter] = useState<"global" | "weekly" | "monthly">("global");
   const [visibleBubbles, setVisibleBubbles] = useState<Array<{lang: typeof floatingLanguagesPool[0]; direction: string}>>([]);
   
-  const { user, logout, progress, addXP, completeLesson, unlockAchievement } = useAuth();
+  const { user, logout, progress, addXP, completeLesson, unlockAchievement, saveQuizScore } = useAuth();
 
   // Initialize with random 10 bubbles from pool of 50
   useEffect(() => {
@@ -315,20 +315,6 @@ export default function Dashboard() {
     if (Object.keys(languageProgress).length >= 5) unlockAchievement("polyglot");
   }, [lessonsCompleted, streak, languageProgress]);
 
-  // Handle quiz completion
-  const handleQuizComplete = (score: number, total: number) => {
-    if (selectedQuizLanguage) {
-      const percentage = Math.round((score / total) * 100);
-      const { saveQuizScore } = useAuth();
-      saveQuizScore(selectedQuizLanguage, percentage);
-      
-      if (percentage === 100) {
-        unlockAchievement("perfect_score");
-      }
-    }
-    setSelectedQuizLanguage(null);
-  };
-
   // Get updated leaderboard with user XP
   const getLeaderboard = () => {
     const updatedLeaderboard = [...mockLeaderboard];
@@ -355,8 +341,21 @@ export default function Dashboard() {
     { id: 4, name: "Listening", xp: 35, time: "7 min", color: "from-amber-500 to-orange-500", icon: Star, action: () => {} },
   ];
 
+  // Show quiz if language is selected
   if (selectedQuizLanguage) {
-    return <Quiz language={selectedQuizLanguage} onComplete={(score, total) => handleQuizComplete(score, total)} />;
+    return (
+      <Quiz 
+        language={selectedQuizLanguage} 
+        onComplete={(score, total) => {
+          const percentage = Math.round((score / total) * 100);
+          saveQuizScore(selectedQuizLanguage, percentage);
+          if (percentage === 100) {
+            unlockAchievement("perfect_score");
+          }
+          setSelectedQuizLanguage(null);
+        }} 
+      />
+    );
   }
 
   if (!user) {
