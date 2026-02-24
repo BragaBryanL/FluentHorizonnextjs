@@ -24,7 +24,7 @@ const languages = [
   { name: "Hindi", flagUrl: "https://flagcdn.com/in.svg", description: "Explore the world's largest democracy.", speakers: "600M", difficulty: "Hard", script: "Devanagari" },
 ];
 
-type PaletteType = "default" | "ocean" | "sunset" | "forest" | "custom";
+type PaletteType = "default" | "ocean" | "sunset" | "forest" | "lavender" | "midnight" | "rose" | "custom";
 
 const floatingChars = [
   { char: "A", lang: "English", size: "text-5xl", opacity: "opacity-20", delay: "0s" },
@@ -46,10 +46,17 @@ const floatingChars = [
 
 export default function Home() {
   const [showSettings, setShowSettings] = useState(false);
-  const { palette, setPalette, customColors } = useTheme();
+  const [showCustomPicker, setShowCustomPicker] = useState(false);
+  const { palette, setPalette, customColors, setCustomColors, paletteInfo } = useTheme();
   const [search, setSearch] = useState("");
   const [showAuth, setShowAuth] = useState(false);
   const [activeCard, setActiveCard] = useState<string | null>(null);
+
+  // Custom color states
+  const [customBg, setCustomBg] = useState(customColors.background);
+  const [customHeading, setCustomHeading] = useState(customColors.heading);
+  const [customDesc, setCustomDesc] = useState(customColors.description);
+  const [customAccent, setCustomAccent] = useState(customColors.accent);
 
   useEffect(() => {
     const handler = () => setShowAuth(true);
@@ -80,6 +87,9 @@ export default function Home() {
     ocean: "bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900",
     sunset: "bg-gradient-to-br from-orange-500 via-rose-500 to-pink-600",
     forest: "bg-gradient-to-br from-green-800 via-emerald-700 to-teal-800",
+    lavender: "bg-gradient-to-br from-purple-900 via-violet-800 to-indigo-900",
+    midnight: "bg-gradient-to-br from-gray-900 via-slate-900 to-black",
+    rose: "bg-gradient-to-br from-rose-400 via-pink-500 to-red-500",
     default: "bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50",
     custom: "bg-gradient-to-br from-slate-50 via-white to-blue-50",
   };
@@ -88,12 +98,25 @@ export default function Home() {
     ocean: { primary: "text-white", secondary: "text-blue-200", accent: "text-cyan-300" },
     sunset: { primary: "text-white", secondary: "text-orange-100", accent: "text-yellow-300" },
     forest: { primary: "text-white", secondary: "text-green-100", accent: "text-emerald-300" },
+    lavender: { primary: "text-white", secondary: "text-purple-200", accent: "text-pink-300" },
+    midnight: { primary: "text-white", secondary: "text-gray-300", accent: "text-cyan-400" },
+    rose: { primary: "text-white", secondary: "text-rose-100", accent: "text-yellow-200" },
     default: { primary: "text-slate-900", secondary: "text-slate-600", accent: "text-blue-600" },
-    custom: { primary: "text-slate-900", secondary: "text-slate-600", accent: "text-blue-600" },
+    custom: { primary: customHeading, secondary: customDesc, accent: customAccent },
   };
 
   const colors = textColors[palette];
   const isLightTheme = palette === "default" || palette === "custom";
+
+  const handleSaveCustomColors = () => {
+    setCustomColors({
+      background: customBg,
+      heading: customHeading,
+      description: customDesc,
+      accent: customAccent,
+    });
+    setShowCustomPicker(false);
+  };
 
   return (
     <div className="relative min-h-screen font-sans w-full overflow-x-hidden" style={palette === "custom" ? { background: customColors.background } : {}}>
@@ -321,30 +344,187 @@ export default function Home() {
               Choose Your Theme
             </h3>
 
-            <div className="grid grid-cols-2 gap-4">
-              {[
-                { id: "ocean", name: "Ocean Night", gradient: "from-slate-900 via-blue-900 to-slate-900" },
-                { id: "sunset", name: "Sunset", gradient: "from-orange-500 via-rose-500 to-pink-600" },
-                { id: "forest", name: "Forest", gradient: "from-green-800 via-emerald-700 to-teal-800" },
-                { id: "default", name: "Daylight", gradient: "from-slate-50 via-blue-50 to-indigo-50" },
-              ].map((theme) => (
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              {paletteInfo.filter(p => p.id !== 'custom').map((theme) => (
                 <button
                   key={theme.id}
-                  onClick={() => setPalette(theme.id as PaletteType)}
+                  onClick={() => setPalette(theme.id)}
                   className={`relative p-4 rounded-2xl overflow-hidden transition-all hover:scale-105 active:scale-95 ${palette === theme.id ? "ring-4 ring-cyan-400 ring-offset-2" : ""}`}
                 >
                   <div className={`absolute inset-0 bg-gradient-to-br ${theme.gradient}`}></div>
-                  <div className="relative text-center py-8">
+                  <div className="relative text-center py-6">
                     <div className="text-white font-semibold">{theme.name}</div>
                   </div>
                 </button>
               ))}
             </div>
 
+            {/* Custom Theme Button */}
+            <button
+              onClick={() => setShowCustomPicker(true)}
+              className={`w-full p-4 rounded-2xl border-2 border-dashed transition-all hover:scale-105 ${
+                palette === 'custom' ? "ring-4 ring-cyan-400 ring-offset-2" : ""
+              } ${isLightTheme ? "border-slate-300 hover:border-blue-400" : "border-white/30 hover:border-cyan-400"}`}
+            >
+              <div className="flex items-center justify-center gap-3">
+                <div className="flex gap-1">
+                  <div className="w-4 h-4 rounded-full bg-blue-500"></div>
+                  <div className="w-4 h-4 rounded-full bg-pink-500 -ml-2"></div>
+                  <div className="w-4 h-4 rounded-full bg-yellow-500 -ml-2"></div>
+                </div>
+                <span className={`font-semibold ${isLightTheme ? "text-slate-700" : "text-white"}`}>Custom Colors</span>
+              </div>
+            </button>
+
             <div className={`mt-6 p-4 rounded-2xl ${isLightTheme ? "bg-slate-100" : "bg-slate-800"}`}>
               <p className={`text-sm text-center ${isLightTheme ? "text-slate-600" : "text-slate-400"}`}>
-                🎨 More themes and customization options coming soon!
+                🎨 More customization options coming soon!
               </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Custom Color Picker Modal */}
+      {showCustomPicker && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in"
+          onClick={() => setShowCustomPicker(false)}
+        >
+          <div
+            onClick={(e: React.MouseEvent) => e.stopPropagation()}
+            className={`rounded-3xl shadow-2xl p-8 w-full max-w-md mx-4 animate-slide-up ${isLightTheme ? "bg-white" : "bg-slate-900"}`}
+          >
+            <div className="flex items-center justify-between mb-6">
+              <h3 className={`text-xl font-bold ${isLightTheme ? "text-slate-900" : "text-white"}`}>
+                Customize Your Theme
+              </h3>
+              <button
+                onClick={() => setShowCustomPicker(false)}
+                className={isLightTheme ? "text-slate-400 hover:text-slate-600" : "text-slate-500 hover:text-white"}
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className={`block text-sm font-medium mb-2 ${isLightTheme ? "text-slate-700" : "text-slate-300"}`}>
+                  Background Color
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="color"
+                    value={customBg.startsWith('#') ? customBg : '#3b82f6'}
+                    onChange={(e) => setCustomBg(e.target.value)}
+                    className="w-12 h-12 rounded-lg cursor-pointer border-0"
+                  />
+                  <input
+                    type="text"
+                    value={customBg}
+                    onChange={(e) => setCustomBg(e.target.value)}
+                    className={`flex-1 px-4 rounded-lg border ${isLightTheme ? "border-slate-300" : "border-slate-600 bg-slate-800 text-white"}`}
+                    placeholder="#3b82f6"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className={`block text-sm font-medium mb-2 ${isLightTheme ? "text-slate-700" : "text-slate-300"}`}>
+                  Heading Color
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="color"
+                    value={customHeading}
+                    onChange={(e) => setCustomHeading(e.target.value)}
+                    className="w-12 h-12 rounded-lg cursor-pointer border-0"
+                  />
+                  <input
+                    type="text"
+                    value={customHeading}
+                    onChange={(e) => setCustomHeading(e.target.value)}
+                    className={`flex-1 px-4 rounded-lg border ${isLightTheme ? "border-slate-300" : "border-slate-600 bg-slate-800 text-white"}`}
+                    placeholder="#0f172a"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className={`block text-sm font-medium mb-2 ${isLightTheme ? "text-slate-700" : "text-slate-300"}`}>
+                  Description Color
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="color"
+                    value={customDesc}
+                    onChange={(e) => setCustomDesc(e.target.value)}
+                    className="w-12 h-12 rounded-lg cursor-pointer border-0"
+                  />
+                  <input
+                    type="text"
+                    value={customDesc}
+                    onChange={(e) => setCustomDesc(e.target.value)}
+                    className={`flex-1 px-4 rounded-lg border ${isLightTheme ? "border-slate-300" : "border-slate-600 bg-slate-800 text-white"}`}
+                    placeholder="#475569"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className={`block text-sm font-medium mb-2 ${isLightTheme ? "text-slate-700" : "text-slate-300"}`}>
+                  Accent Color
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="color"
+                    value={customAccent}
+                    onChange={(e) => setCustomAccent(e.target.value)}
+                    className="w-12 h-12 rounded-lg cursor-pointer border-0"
+                  />
+                  <input
+                    type="text"
+                    value={customAccent}
+                    onChange={(e) => setCustomAccent(e.target.value)}
+                    className={`flex-1 px-4 rounded-lg border ${isLightTheme ? "border-slate-300" : "border-slate-600 bg-slate-800 text-white"}`}
+                    placeholder="#06b6d4"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Preview */}
+            <div 
+              className="mt-6 p-4 rounded-2xl"
+              style={{ background: customBg }}
+            >
+              <h4 className="font-bold mb-1" style={{ color: customHeading }}>Preview</h4>
+              <p className="text-sm" style={{ color: customDesc }}>This is how your theme will look</p>
+              <button 
+                className="mt-2 px-4 py-2 rounded-lg text-white font-medium"
+                style={{ background: customAccent }}
+              >
+                Sample Button
+              </button>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => setShowCustomPicker(false)}
+                className={`flex-1 py-3 rounded-xl font-semibold border transition-all ${
+                  isLightTheme ? "border-slate-300 text-slate-700 hover:bg-slate-100" : "border-white/20 text-white hover:bg-white/10"
+                }`}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveCustomColors}
+                className="flex-1 py-3 rounded-xl font-semibold bg-gradient-to-r from-cyan-500 to-blue-500 text-white hover:shadow-lg transition-all"
+              >
+                Save Theme
+              </button>
             </div>
           </div>
         </div>
